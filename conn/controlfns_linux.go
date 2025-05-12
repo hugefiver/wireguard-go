@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  *
- * Copyright (C) 2017-2023 WireGuard LLC. All Rights Reserved.
+ * Copyright (C) 2017-2025 WireGuard LLC. All Rights Reserved.
  */
 
 package conn
@@ -56,6 +56,14 @@ func init() {
 				err = fmt.Errorf("unhandled network: %s: %w", network, unix.EINVAL)
 			}
 			return err
+		},
+
+		// Attempt to enable UDP_GRO
+		func(network, address string, c syscall.RawConn) error {
+			c.Control(func(fd uintptr) {
+				_ = unix.SetsockoptInt(int(fd), unix.IPPROTO_UDP, unix.UDP_GRO, 1)
+			})
+			return nil
 		},
 	)
 }
